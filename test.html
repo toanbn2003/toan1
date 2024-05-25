@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tạo sản phẩm mới</title>
+    <style>
+        /* CSS cho form */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .form-group input[type="file"] {
+            margin-top: 5px;
+        }
+
+        .form-group button {
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Tạo sản phẩm mới</h2>
+        <form id="createProductForm">
+            <div class="form-group">
+                <label for="tenSanPham">Tên sản phẩm:</label>
+                <input type="text" id="tenSanPham" name="tenSanPham" required>
+            </div>
+            <div class="form-group">
+                <label for="xuatXu">Xuất xứ:</label>
+                <input type="text" id="xuatXu" name="xuatXu" required>
+            </div>
+            <div class="form-group">
+                <label for="gia">Giá:</label>
+                <input type="number" id="gia" name="gia" required>
+            </div>
+            <div class="form-group">
+                <label for="soLuot">Sơ lược:</label>
+                <input type="text" id="soLuot" name="soLuot" required>
+            </div>
+            <div class="form-group">
+                <label for="moTaChiTiet">Mô tả chi tiết:</label>
+                <textarea id="moTaChiTiet" name="moTaChiTiet" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="maLoaiSanPham">Mã loại sản phẩm:</label>
+                <input type="number" id="maLoaiSanPham" name="maLoaiSanPham" required>
+            </div>
+            <div class="form-group">
+                <label for="maThuongHieu">Mã thương hiệu:</label>
+                <input type="number" id="maThuongHieu" name="maThuongHieu" required>
+            </div>
+            <div class="form-group">
+                <label for="danhSachAnhMinhHoa">Danh sách ảnh minh họa:</label>
+                <input type="file" id="danhSachAnhMinhHoa" name="danhSachAnhMinhHoa" multiple required>
+            </div>
+            <div id="selectedImages"></div>
+            <div class="form-group">
+                <button type="submit">Tạo sản phẩm</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("createProductForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Ngăn chặn việc gửi form
+        
+            // Lấy giá trị từ các trường input
+            var tenSanPham = document.getElementById("tenSanPham").value;
+            var xuatXu = document.getElementById("xuatXu").value;
+            var gia = parseInt(document.getElementById("gia").value);
+            var soLuot = document.getElementById("soLuot").value;
+            var moTaChiTiet = document.getElementById("moTaChiTiet").value;
+            var maLoaiSanPham = parseInt(document.getElementById("maLoaiSanPham").value);
+            var maThuongHieu = parseInt(document.getElementById("maThuongHieu").value);
+        
+            var danhSachAnhMinhHoa = [];
+            var inputFiles = document.getElementById("danhSachAnhMinhHoa").files;
+            var selectedImagesContainer = document.getElementById("selectedImages");
+            selectedImagesContainer.innerHTML = ""; // Xóa các tệp ảnh đã chọn trước đó
+        
+            for (var i = 0; i < inputFiles.length; i++) {
+                var file = inputFiles[i];
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    danhSachAnhMinhHoa.push({
+                        url: e.target.result
+                    });
+        
+                    // Hiển thị các tệp ảnh đã chọn
+                    var img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.width = "100px";
+                    img.style.height = "100px";
+                    selectedImagesContainer.appendChild(img);
+        
+                    // Kiểm tra xem đã thêm tất cả ảnh minh họa vào danh sách chưa
+                    if (danhSachAnhMinhHoa.length === inputFiles.length) {
+                        // Tạo đối tượng sản phẩm mới với danh sách ảnh minh họa
+                        var product = {
+                            tenSanPham: tenSanPham,
+                            xuatXu: xuatXu,
+                            gia: gia,
+                            soLuot: soLuot,
+                            moTaChiTiet: moTaChiTiet,
+                            maLoaiSanPham: maLoaiSanPham,
+                            maThuongHieu: maThuongHieu,
+                            danhSachAnhMinhHoa: danhSachAnhMinhHoa
+                        };
+        
+                        // Gửi đối tượng sản phẩm tới API
+                        fetch('http://localhost:8080/SanPham', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(product)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Sản phẩm đã được tạo:', data);
+                            console.log('Data đã gửi ' , product);
+                            // Xử lý dữ liệu trả về từ API hoặc hiển thị thông báo thành công
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi gửi yêu cầu:', error);
+                            // Xử lý lỗi hoặc hiển thị thông báo lỗi
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
